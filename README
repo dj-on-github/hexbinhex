@@ -1,0 +1,19 @@
+$ hex2bin -h
+Usage: hex2bin [-h][-s lines_to_skip][-o <out filename>][filename]
+
+Convert hexadecimal data to binary.
+  Author: David Johnston, dj@deadhat.com
+
+
+$ bin2hex -h
+Usage: bin2hex [-w <width>][-h][-o <out filename>] [filename]
+
+Convert binary data to hexadecimal.
+  Author: David Johnston, dj@deadhat.com
+
+
+Two programs to convert between hex and binary format. bin2hex exists
+because it hasma more compact output format than od or hexdump.
+
+hex2bin exists just for the sake of symmetry.
+
