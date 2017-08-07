@@ -1,6 +1,6 @@
 
 /*
-    genrandom - A utility to generate random numbers.
+    bin2hex - A utility to convert binary data to hex data.
     
     Copyright (C) 2017  David Johnston
 
