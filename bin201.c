@@ -34,8 +34,9 @@
 #include <getopt.h>
 
 void display_usage() {
-fprintf(stderr,"Usage: bin201 [-w <width>][-h][-o <out filename>] [filename]\n");
-fprintf(stderr,"\n");
+fprintf(stderr,"Usage: bin201 [-w <width>][-b][-h][-o <out filename>] [filename]\n");
+fprintf(stderr,"  -w <width> Sets the number of bits per output line\n");
+fprintf(stderr,"  -b         Reverses the order of bits in each byte\n");
 fprintf(stderr,"Convert binary data to ascii binary (01001001).\n");
 fprintf(stderr,"  Author: David Johnston, dj@deadhat.com\n");
 fprintf(stderr,"\n");
