@@ -11,9 +11,28 @@ Usage: bin2hex [-w <width>][-h][-o <out filename>] [filename]
 Convert binary data to hexadecimal.
   Author: David Johnston, dj@deadhat.com
 
+$ bin201 -h
+Usage: bin201 [-w <width>][-b][-h][-o <out filename>] [filename]
+  -w <width> Sets the number of bits per output line
+  -b         Reverses the order of bits in each byte
+Convert binary data to ascii binary (01001001).
+  Author: David Johnston, dj@deadhat.com
+
+$ bin2nistoddball -h
+Usage: bin2nistoddball [-w <width>][-l <bits_per_symbol 1-8>][-h][-o <out filename>] [filename]
+
+Convert binary data to NIST Oddball SP800-90B one-symbol-per-byte format.
+  Author: David Johnston, dj@deadhat.com
+
+
 
 Two programs to convert between hex and binary format. bin2hex exists
-because it hasma more compact output format than od or hexdump.
+because it hasma more compact output format than od or hexdump.  hex2bin
+exists just for the sake of symmetry.
 
-hex2bin exists just for the sake of symmetry.
+bin2nistoddball converts binary to the oddball one-symbol-per-byte 
+format used by the NIST SP800-90B sofware.
+
+bin201 converts binary to ASCII binary
+
 
