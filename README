@@ -27,7 +27,7 @@ Convert binary data to NIST Oddball SP800-90B one-symbol-per-byte format.
 
 
 Two programs to convert between hex and binary format. bin2hex exists
-because it hasma more compact output format than od or hexdump.  hex2bin
+because it has a more compact output format than od or hexdump.  hex2bin
 exists just for the sake of symmetry.
 
 bin2nistoddball converts binary to the oddball one-symbol-per-byte 
