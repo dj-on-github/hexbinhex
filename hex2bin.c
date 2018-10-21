@@ -23,6 +23,7 @@
     Contact. David Johnston dj@deadhat.com
 */
 /* make isnan() visible */
+#define _DEFAULT_SOURCE
 #define _BSD_SOURCE 
 
 #include <stdio.h>
@@ -212,33 +213,33 @@ int main(int argc, char** argv)
             /* Slide through the data picking up 2 hex characters, discarding trash */
             
             do {
-                if (charcount < 2) 
-                    achar = buffer[inindex++];
-                    if (ishex(achar)) {
-                        hexchars[charcount++]=achar;
-                        i++;
-                    }
+                if (charcount < 2) achar = buffer[inindex++];
+
+                if (ishex(achar)) {
+                    hexchars[charcount++]=achar;
+                    i++;
+                }
                 
-                    /* Skip 0x */
+                /* Skip 0x */
                     
-                    /* we last got 0 and the next is x - hence 0x */
-                    if ((hexchars[0]=='0') && (achar=='x') && (charcount==1)) {
-                        charcount = 0; /* skip 0x prefixes */
-                    }
-                    /* We have 2 hexchars in and the next is x, so discard it */
-                    else if ((achar=='x') && (charcount==2)) {
-                        charcount = 0;
-                    }
+                /* we last got 0 and the next is x - hence 0x */
+                if ((hexchars[0]=='0') && (achar=='x') && (charcount==1)) {
+                    charcount = 0; /* skip 0x prefixes */
+                }
+                /* We have 2 hexchars in and the next is x, so discard it */
+                else if ((achar=='x') && (charcount==2)) {
+                    charcount = 0;
+                }
                     
-                    /* Use if we have two hex chars, turn into binary */
+                /* Use if we have two hex chars, turn into binary */
                     
-                    if (charcount == 2) {
-                        hexstring[0] = hexchars[0];
-                        hexstring[1] = hexchars[1];
-                        hexstring[2] = '0';
-                        abyte = hextobyte(hexstring);
-                        outbuffer[outindex++]=abyte;
-                    }
+                if (charcount == 2) {
+                    hexstring[0] = hexchars[0];
+                    hexstring[1] = hexchars[1];
+                    hexstring[2] = '0';
+                    abyte = hextobyte(hexstring);
+                    outbuffer[outindex++]=abyte;
+                }
                 
                 /* until we have two hexchars or we run out of input data */
             } while ((charcount < 2) && (inindex < len));

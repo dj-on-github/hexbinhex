@@ -23,6 +23,7 @@
     Contact. David Johnston dj@deadhat.com
 */
 /* make isnan() visible */
+#define _DEFAULT_SOURCE
 #define _BSD_SOURCE 
 
 #include <stdio.h>
@@ -61,30 +62,28 @@ void printsample(unsigned char *thesample)
 int main(int argc, char** argv)
 {
     int opt;
-	int i;
-	
-	FILE *ifp;
-	FILE *ofp;
-	int using_outfile;
-	int using_infile;
-	char filename[1000];
-	char infilename[1000];
-	
-	int linewidth;
+    int i;
+    
+    FILE *ifp;
+    FILE *ofp;
+    int using_outfile;
+    int using_infile;
+    char filename[1000];
+    char infilename[1000];
+    
     int width;
     
     int abyte;
 
-	/* Defaults */
-	using_outfile = 0;       /* use stdout instead of outputfile*/
+    /* Defaults */
+    using_outfile = 0;       /* use stdout instead of outputfile*/
 
     width = 32;
-	linewidth = 32;
     
     filename[0] = (char)0;
-	infilename[0] = (char)0;
+    infilename[0] = (char)0;
 
-	/* get the options and arguments */
+    /* get the options and arguments */
     int longIndex;
 
     char optString[] = "o:k:w:h";
@@ -129,30 +128,30 @@ int main(int argc, char** argv)
         using_infile = 1;
     }
 
-	/* Range check the var args */
+    /* Range check the var args */
 
 
-	/* open the output file if needed */
+    /* open the output file if needed */
 
-	if (using_outfile==1)
-	{
-		ofp = fopen(filename, "w");
-		if (ofp == NULL) {
-			perror("failed to open output file for writing");
-			exit(1);
-		}
-	}
+    if (using_outfile==1)
+    {
+        ofp = fopen(filename, "w");
+        if (ofp == NULL) {
+            perror("failed to open output file for writing");
+            exit(1);
+        }
+    }
 
-	/* open the input file if needed */
-	if (using_infile==1)
-	{
+    /* open the input file if needed */
+    if (using_infile==1)
+    {
         ifp =  fopen(infilename, "rb");
-		    
-		if (ifp == NULL) {
-			perror("failed to open input file for reading");
-			exit(1);
-		}
-	}
+            
+        if (ifp == NULL) {
+            perror("failed to open input file for reading");
+            exit(1);
+        }
+    }
 
     unsigned char buffer[2048];
     unsigned char outbuffer[10000];
