@@ -34,7 +34,7 @@
 #include <getopt.h>
 
 void display_usage() {
-fprintf(stderr,"Usage: bin2nistoddball [-w <width>][-l <bits_per_symbol 1-8>][-h][-o <out filename>] [filename]\n");
+fprintf(stderr,"Usage: nistoddball2bin [-l <bits_per_symbol 1-8>][-h][-o <out filename>] [filename]\n");
 fprintf(stderr,"\n");
 fprintf(stderr,"Convert binary data to NIST Oddball SP800-90B one-symbol-per-byte format.\n");
 fprintf(stderr,"  Author: David Johnston, dj@deadhat.com\n");
@@ -70,13 +70,11 @@ int main(int argc, char** argv)
 	char filename[1000];
 	char infilename[1000];
 	
-    int width;
     int bps;   
     int abyte;
 
 	/* Defaults */
 	using_outfile = 0;       /* use stdout instead of outputfile*/
-    width = 32;
     bps = 1;    
     filename[0] = (char)0;
 	infilename[0] = (char)0;
@@ -84,7 +82,7 @@ int main(int argc, char** argv)
 	/* get the options and arguments */
     int longIndex;
 
-    char optString[] = "o:k:l:w:h";
+    char optString[] = "o:k:l:h";
     static const struct option longOpts[] = {
     { "output", no_argument, NULL, 'o' },
     { "width", required_argument, NULL, 'w' },
@@ -99,10 +97,6 @@ int main(int argc, char** argv)
             case 'o':
                 using_outfile = 1;
                 strcpy(filename,optarg);
-                break;
-            case 'w':
-                width=atoi(optarg);
-                if (width<1) width=32;
                 break;
             case 'l':
                 bps = atoi(optarg);
@@ -189,10 +183,10 @@ int main(int argc, char** argv)
             
         if (len == 0) break;
 
-        // Read in buffer bytes into the FIFO of bits. One bit per byte.        
+        // Read in buffer bytewise symbols into the FIFO of bits. 8 bits per byte.        
         for (i=0;i<len;i++) {
             abyte = buffer[i];
-            for(j=0;j<8;j++) {
+            for(j=0;j<bps;j++) {
                 abit = (abyte & 0x01);
                 abyte = abyte >> 1;
 
@@ -202,14 +196,14 @@ int main(int argc, char** argv)
             }
         }
 
-        // Work out how many full symbols are in the FIFO.
-        symbol_count = bitfifo_entries / bps;
+        // Work out how many full bytes are in the FIFO.
+        symbol_count = bitfifo_entries / 8;
 
-        //Pull bits from the FIFO and Write out the symbols (of 1 to 8 bits) as bytes;
+        //Pull bits from the FIFO and Write out bytes;
         for (i=0;i<symbol_count;i++) {
             abyte = 0;
             // Read the bits of one symbol and put into a byte
-            for (j=0;j<bps;j++) {
+            for (j=0;j<8;j++) {
                 bitfifo_tail = (bitfifo_tail +1) % BITFIFO_SIZE;
                 bitfifo_entries--;
                 abit = bitfifo[bitfifo_tail];

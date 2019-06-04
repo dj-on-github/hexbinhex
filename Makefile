@@ -3,7 +3,10 @@ CFLAGS = -I/usr/local/include -m64 -g -Wall
 LDFLAGS = -L/usr/local/lib 
 LDLIBS = -lm
 
-all: hex2bin bin2hex bin201 bin2nistoddball
+all: hex2bin bin2hex bin201 bin2nistoddball nistoddball2bin
+
+nistoddball2bin: nistoddball2bin.c
+	$(CC) $(CFLAGS) $(LDFLAGS) nistoddball2bin.c  -o nistoddball2bin $(LDLIBS)
 
 bin2nistoddball: bin2nistoddball.c
 	$(CC) $(CFLAGS) $(LDFLAGS) bin2nistoddball.c  -o bin2nistoddball $(LDLIBS)
@@ -22,11 +25,14 @@ install:
 	cp bin201  /usr/local/bin
 	cp hex2bin /usr/local/bin
 	cp bin2nistoddball /usr/local/bin
+	cp nistoddball2bin /usr/local/bin
 
 clean:
 	rm bin2hex
 	rm bin201
 	rm hex2bin
 	rm bin2nistoddball
+	rm nistoddball2bin
+
 
 
