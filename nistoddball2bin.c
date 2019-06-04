@@ -62,6 +62,7 @@ int main(int argc, char** argv)
 {
     int opt;
 	int i;
+    int reverse=0;
 	
 	FILE *ifp;
 	FILE *ofp;
@@ -82,11 +83,12 @@ int main(int argc, char** argv)
 	/* get the options and arguments */
     int longIndex;
 
-    char optString[] = "o:k:l:h";
+    char optString[] = "o:k:l:rh";
     static const struct option longOpts[] = {
     { "output", no_argument, NULL, 'o' },
     { "width", required_argument, NULL, 'w' },
     { "bits_per_symbol", required_argument, NULL, 'l' },
+    { "reverse", no_argument, NULL, 'r' },
     { "help", no_argument, NULL, 'h' },
     { NULL, no_argument, NULL, 0 }
     };
@@ -110,7 +112,9 @@ int main(int argc, char** argv)
                 using_infile = 1;
                 strcpy(infilename,optarg);
                 break;
-                
+            case 'r':
+                reverse = 1;
+                break;
             case 'h':   /* fall-through is intentional */
             case '?':
                 display_usage();
@@ -162,7 +166,7 @@ int main(int argc, char** argv)
     int bitfifo_tail = 0;
     int bitfifo_entries = 0;
 
-    unsigned char outbuffer[10000];
+    unsigned char outbuffer[20000];
     int outindex = 0;
     int bytecount = 0;
     int done=0;
@@ -175,6 +179,11 @@ int main(int argc, char** argv)
     int last_abyte = -1;
     int max_runcount = 0;
     int location = 0;
+
+    //if (reverse == 0) fprintf(stderr,"reverse=0\n");
+    //else fprintf(stderr,"reverse=1\n");
+    //fflush(stderr);
+
     do {
         if (using_infile==1)
             len = fread(buffer, 1, 2048 , ifp);
@@ -202,12 +211,16 @@ int main(int argc, char** argv)
         //Pull bits from the FIFO and Write out bytes;
         for (i=0;i<symbol_count;i++) {
             abyte = 0;
-            // Read the bits of one symbol and put into a byte
+            // Read the bits of one byte and put into a byte
             for (j=0;j<8;j++) {
                 bitfifo_tail = (bitfifo_tail +1) % BITFIFO_SIZE;
                 bitfifo_entries--;
                 abit = bitfifo[bitfifo_tail];
-                abyte = (abyte << 1) | abit;
+                if (reverse==0) {
+                    abyte = abyte + (abit << j);
+                } else {
+                    abyte = (abyte << 1) | abit;
+                }
             }
 
             bytecount++;
@@ -224,9 +237,9 @@ int main(int argc, char** argv)
                 last_abyte = abyte;
             }
             location++;
-            if (runcount > 35) {
-                printf("Runcount = %d, location = %d\n",runcount,location);
-            }
+            //if (runcount > 35) {
+            //    fprintf(stderr,"Runcount = %d, location = %d\n",runcount,location);
+            //}
         }
         
         if (using_outfile)
@@ -238,8 +251,8 @@ int main(int argc, char** argv)
         
     } while (done==0);
     
-    if (using_outfile==1) fclose(ofp);
-    printf("max_runcount = %d\n",max_runcount);
+    //if (using_outfile==1) fclose(ofp);
+    //printf("max_runcount = %d\n",max_runcount);
 }
 
 

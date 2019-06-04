@@ -168,7 +168,7 @@ int main(int argc, char** argv)
     int bitfifo_tail = 0;
     int bitfifo_entries = 0;
 
-    unsigned char outbuffer[10000];
+    unsigned char outbuffer[20000];
     int outindex = 0;
     int bytecount = 0;
     int done=0;
@@ -230,9 +230,9 @@ int main(int argc, char** argv)
                 last_abyte = abyte;
             }
             location++;
-            if (runcount > 35) {
-                printf("Runcount = %d, location = %d\n",runcount,location);
-            }
+            //if (runcount > 35) {
+            //    fprintf(stderr,"Runcount = %d, location = %d\n",runcount,location);
+            //}
         }
         
         if (using_outfile)
@@ -245,7 +245,7 @@ int main(int argc, char** argv)
     } while (done==0);
     
     if (using_outfile==1) fclose(ofp);
-    printf("max_runcount = %d\n",max_runcount);
+    //fprintf(stderr,"max_runcount = %d\n",max_runcount);
 }
 
 
