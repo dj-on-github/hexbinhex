@@ -38,6 +38,8 @@
 
 void display_usage() {
 fprintf(stderr,"Usage: hex2bin [-h][-s lines_to_skip][-o <out filename>][filename]\n");
+fprintf(stderr,"       -s n          Skip the first n lines of the input text\n");
+fprintf(stderr,"       -o filename   Output to file filename instead of stdout\n");
 fprintf(stderr,"\n");
 fprintf(stderr,"Convert hexadecimal data to binary.\n");
 fprintf(stderr,"  Author: David Johnston, dj@deadhat.com\n");
@@ -203,6 +205,7 @@ int main(int argc, char** argv)
             len = fread(buffer, 1, BUFSIZE , stdin);
         
         /* End when we reach EOF */
+        //fprintf(stderr,"len=%d\n",(int)len);
         if (len == 0) break;
         
         /* Pick up hex char pairs and move to outbuffer until outbuffer is full
@@ -247,7 +250,9 @@ int main(int argc, char** argv)
                 charcount = 0;
             }
             /* until we run out of output buffer or run out of input data */
-        } while ((outindex < BUFSIZE) && (inindex<BUFSIZE));
+            
+            //fprintf(stderr,"in index=%d",inindex);
+        } while ((outindex < BUFSIZE) && (inindex < len));
 
         /* Now we have a binary buffer outbuffer with outindex chars.
          * Output it.

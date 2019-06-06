@@ -34,24 +34,22 @@
 #include <getopt.h>
 
 void display_usage() {
-fprintf(stderr,"Usage: nistoddball2bin [-l <bits_per_symbol 1-8>][-h][-o <out filename>] [filename]\n");
+fprintf(stderr,"Usage: nistoddball2bin [-l <bits_per_symbol 1-8>][-B|-L][-v][-h][-o <out filename>] [filename]\n");
+fprintf(stderr,"       -l n          Set the number of symbol bits per byte encoded in the input data. Must be between 1 to 8\n");
+fprintf(stderr,"       -B            Interpret the input symbols at being big endian (MSB first)\n");
+fprintf(stderr,"       -L            Interpret the input symbols at being little endian (LSB first) (default)\n");
+fprintf(stderr,"       -v            Verbose mode. Outputs information to stderr\n");
+fprintf(stderr,"       -h            Display this information\n");
+fprintf(stderr,"       -o filename   Output to file filename instead of stdout\n");
 fprintf(stderr,"\n");
 fprintf(stderr,"Convert binary data to NIST Oddball SP800-90B one-symbol-per-byte format.\n");
 fprintf(stderr,"  Author: David Johnston, dj@deadhat.com\n");
 fprintf(stderr,"\n");
-}
-
-void printsample(unsigned char *thesample)
-{
-    int tempindex;
-    int j;
-    int i;
-   tempindex = 0;
-    for (j=0;j<16;j++)
-    {
-            for (i=0;i<16;i++) printf("%02X",thesample[tempindex++]);
-            printf("\n");
-    }
+fprintf(stderr,"Notes:\n");
+fprintf(stderr,"      The NIST format for SP800-90B testing requires symbols to be as one symbol per bit.\n");
+fprintf(stderr,"      This means only symbols of sizes 1 through 8 bits can be supported.\n");
+fprintf(stderr,"      The bit ordering of the bits within the symbols is not specified by NIST. The -L and -B options allow you to choose.\n");
+fprintf(stderr,"      The output binary data by default is in little endian format, with the lower order bits in bytes coming before higher order bits. This can be reversed with the -r option.\n");
 }
 
 /********
@@ -62,7 +60,6 @@ int main(int argc, char** argv)
 {
     int opt;
 	int i;
-    int reverse=0;
 	
 	FILE *ifp;
 	FILE *ofp;
@@ -74,6 +71,12 @@ int main(int argc, char** argv)
     int bps;   
     int abyte;
 
+    int littleendian=1;
+    int gotL=0;
+    int gotB=0;
+    int verbose = 0;
+    int reverse = 0;
+    
 	/* Defaults */
 	using_outfile = 0;       /* use stdout instead of outputfile*/
     bps = 1;    
@@ -83,12 +86,15 @@ int main(int argc, char** argv)
 	/* get the options and arguments */
     int longIndex;
 
-    char optString[] = "o:k:l:rh";
+    char optString[] = "o:k:l:BLrvh";
     static const struct option longOpts[] = {
     { "output", no_argument, NULL, 'o' },
     { "width", required_argument, NULL, 'w' },
     { "bits_per_symbol", required_argument, NULL, 'l' },
+    { "littleendian", no_argument, NULL, 'L' },
+    { "bigendian", no_argument, NULL, 'B' },
     { "reverse", no_argument, NULL, 'r' },
+    { "verbose", no_argument, NULL, 'v' },
     { "help", no_argument, NULL, 'h' },
     { NULL, no_argument, NULL, 0 }
     };
@@ -108,12 +114,19 @@ int main(int argc, char** argv)
                     exit(-1);
                 };
                 break;
-            case 'f':
-                using_infile = 1;
-                strcpy(infilename,optarg);
+            case 'L':
+                littleendian=1;
+                gotL=1;
+                break;
+            case 'B':
+                littleendian=0;
+                gotB=1;
                 break;
             case 'r':
-                reverse = 1;
+                reverse=1;
+                break;
+            case 'v':
+                verbose=1;
                 break;
             case 'h':   /* fall-through is intentional */
             case '?':
@@ -192,13 +205,25 @@ int main(int argc, char** argv)
             
         if (len == 0) break;
 
-        // Read in buffer bytewise symbols into the FIFO of bits. 8 bits per byte.        
+        // Read in symbols into the FIFO of bits. bps bits per byte.        
         for (i=0;i<len;i++) {
             abyte = buffer[i];
+            
+            // If less that 8 bits per byte, and big endian, shift them
+            // to the left so that the MSB can be plucked off from the right.
+            if ((littleendian==0) && (bps < 8)) {
+                abyte = abyte << (8-bps);
+            }
+            
+            // Pluck off the bits and put into FIFO
             for(j=0;j<bps;j++) {
-                abit = (abyte & 0x01);
-                abyte = abyte >> 1;
-
+                if (littleendian==1) {
+                    abit = (abyte & 0x01);
+                    abyte = abyte >> 1;
+                } else {
+                    abit = (abyte & 0x80) >> 7;
+                    abyte = abyte << 1;
+                }
                 bitfifo_head = (bitfifo_head +1) % BITFIFO_SIZE;
                 bitfifo_entries++;
                 bitfifo[bitfifo_head] = abit;

@@ -20,7 +20,7 @@ bin2hex: bin2hex.c
 bin201: bin201.c
 	$(CC) $(CFLAGS) $(LDFLAGS) bin201.c  -o bin201 $(LDLIBS)
 
-install:
+install: bin2hex bin201 hex2bin bin2nistoddball nistoddball2bin
 	cp bin2hex /usr/local/bin
 	cp bin201  /usr/local/bin
 	cp hex2bin /usr/local/bin

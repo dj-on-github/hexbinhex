@@ -36,7 +36,8 @@
 void display_usage() {
 fprintf(stderr,"Usage: bin201 [-w <width>][-b][-h][-o <out filename>] [filename]\n");
 fprintf(stderr,"  -w <width> Sets the number of bits per output line\n");
-fprintf(stderr,"  -b         Reverses the order of bits in each byte\n");
+fprintf(stderr,"  -B         Reverses the order of bits in each byte to big endian\n");
+fprintf(stderr,"  -L         Outputs bits as little endian (default)\n");
 fprintf(stderr,"Convert binary data to ascii binary (01001001).\n");
 fprintf(stderr,"  Author: David Johnston, dj@deadhat.com\n");
 fprintf(stderr,"\n");
@@ -72,15 +73,15 @@ int main(int argc, char** argv)
 	char filename[1000];
 	char infilename[1000];
 	
-    int width;
-    int bigendian;    
+    int width=32;
+    int littleendian = 1;
+    int gotB = 0;
+    int gotL = 0;    
     int abyte;
-
+    int verbose = 0;
+    
 	/* Defaults */
 	using_outfile = 0;       /* use stdout instead of outputfile*/
-
-    width = 32;
-    bigendian = 0;
 
     filename[0] = (char)0;
 	infilename[0] = (char)0;
@@ -88,11 +89,13 @@ int main(int argc, char** argv)
 	/* get the options and arguments */
     int longIndex;
 
-    char optString[] = "o:k:w:bh";
+    char optString[] = "o:k:w:BLvh";
     static const struct option longOpts[] = {
     { "output", no_argument, NULL, 'o' },
     { "width", required_argument, NULL, 'w' },
-    { "bigendian", no_argument, NULL, 'b' },
+    { "bigendian", no_argument, NULL, 'B' },
+    { "littleendian", no_argument, NULL, 'L' },
+    { "verbose", no_argument, NULL, 'v' },
     { "help", no_argument, NULL, 'h' },
     { NULL, no_argument, NULL, 0 }
     };
@@ -112,10 +115,17 @@ int main(int argc, char** argv)
                 using_infile = 1;
                 strcpy(infilename,optarg);
                 break;
-            case 'b':
-                bigendian = 1;
+            case 'B':
+                littleendian = 0;
+                gotB = 1;
                 break;
-                
+            case 'L':
+                littleendian = 1;
+                gotL = 1;
+                break;
+            case 'v':
+                verbose = 1;
+                break;
             case 'h':   /* fall-through is intentional */
             case '?':
                 display_usage();
@@ -128,11 +138,29 @@ int main(int argc, char** argv)
          
         opt = getopt_long( argc, argv, optString, longOpts, &longIndex );
     } // end while
-    
+
+    if (gotB==1 && gotL==1) {
+        fprintf(stderr,"ERROR, Can't be both big endian (-B) and little endian (-L) at the same time\n");
+        exit(-1);
+    }
+
     if (optind < argc) {
         strcpy(infilename,argv[optind]);
         using_infile = 1;
     }
+        
+    if (verbose==1) {
+        fprintf(stderr,"Verbose mode enabled\n");
+        if (littleendian==0) fprintf(stderr, "Big endian bit packing assumed\n");
+        if (littleendian==1) fprintf(stderr, "Little endian bit packing assumed\n");
+        if (using_infile==1) {
+            fprintf(stderr,"Reading binary data from file: %s\n", infilename);
+        }
+        if (using_outfile==1) {
+            fprintf(stderr,"Writing ASCII binary data to file: %s\n", filename);
+        }
+    }
+        
 
 	/* Range check the var args */
 
@@ -179,7 +207,7 @@ int main(int argc, char** argv)
         for (i=0;i<len;i++) {
             abyte = buffer[i];
             for (j=0;j<8;j++) {
-                if (bigendian == 1) {
+                if (littleendian == 0) {
                     if (((abyte >> j) & 0x01) == 0) {
                         binch = '0';
                     } else {

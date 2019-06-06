@@ -34,7 +34,13 @@
 #include <getopt.h>
 
 void display_usage() {
-fprintf(stderr,"Usage: bin2nistoddball [-w <width>][-l <bits_per_symbol 1-8>][-h][-o <out filename>] [filename]\n");
+fprintf(stderr,"Usage: bin2nistoddball [-l <bits_per_symbol 1-8>][-B|-L][-v][-h][-o <out filename>] [filename]\n");
+fprintf(stderr,"       -l , --length <bits_per_symbol 1-8> Set the number of bits to encode in eat output byte\n");
+fprintf(stderr,"       -r , --reverse                      Interpret input binary data as big endian (MSB first) (default is little endian)\n");
+fprintf(stderr,"       -B , --bigendian                    Unpack output multi-bit symbols as big-endian (msb first)\n");
+fprintf(stderr,"       -L , --littleendian                 Unpack output multi-bit symbols as little-endian (lsb first) (default)\n");
+fprintf(stderr,"       -v , --verbose                      Output information to stderr\n");
+fprintf(stderr,"       -h , --help                         Output this information\n");
 fprintf(stderr,"\n");
 fprintf(stderr,"Convert binary data to NIST Oddball SP800-90B one-symbol-per-byte format.\n");
 fprintf(stderr,"  Author: David Johnston, dj@deadhat.com\n");
@@ -65,30 +71,35 @@ int main(int argc, char** argv)
 	
 	FILE *ifp;
 	FILE *ofp;
-	int using_outfile;
+	int using_outfile = 0;  /* use stdout instead of outputfile*/
 	int using_infile;
 	char filename[1000];
 	char infilename[1000];
 	
-    int width;
-    int bps;   
+    int bps = 1;   
     int abyte;
+    
+    int littleendian=1;
+    int gotL=0;
+    int gotB=0;
+    int verbose = 0;
+    int reverse = 0;
 
-	/* Defaults */
-	using_outfile = 0;       /* use stdout instead of outputfile*/
-    width = 32;
-    bps = 1;    
+	/* Zero out the strings */    
     filename[0] = (char)0;
 	infilename[0] = (char)0;
 
 	/* get the options and arguments */
     int longIndex;
 
-    char optString[] = "o:k:l:w:h";
+    char optString[] = "o:k:l:w:BLrvh";
     static const struct option longOpts[] = {
     { "output", no_argument, NULL, 'o' },
-    { "width", required_argument, NULL, 'w' },
+    { "reverse", no_argument, NULL, 'r' },
+    { "bigendian", no_argument, NULL, 'B' },
+    { "littleendian", no_argument, NULL, 'L' },
     { "bits_per_symbol", required_argument, NULL, 'l' },
+    { "verbose", no_argument, NULL, 'v' },
     { "help", no_argument, NULL, 'h' },
     { NULL, no_argument, NULL, 0 }
     };
@@ -100,10 +111,6 @@ int main(int argc, char** argv)
                 using_outfile = 1;
                 strcpy(filename,optarg);
                 break;
-            case 'w':
-                width=atoi(optarg);
-                if (width<1) width=32;
-                break;
             case 'l':
                 bps = atoi(optarg);
                 if ((bps < 1) || (bps > 8)) {
@@ -112,11 +119,21 @@ int main(int argc, char** argv)
                     exit(-1);
                 };
                 break;
-            case 'f':
-                using_infile = 1;
-                strcpy(infilename,optarg);
+            case 'r':
+                reverse=1;
                 break;
-                
+            case 'L':
+                littleendian=1;
+                gotL=1;
+                break;
+            case 'B':
+                littleendian=0;
+                gotB=1;
+                break;
+            case 'v':
+                verbose=1;
+                break;
+                                
             case 'h':   /* fall-through is intentional */
             case '?':
                 display_usage();
@@ -130,10 +147,33 @@ int main(int argc, char** argv)
         opt = getopt_long( argc, argv, optString, longOpts, &longIndex );
     } // end while
     
+    if (gotB==1 && gotL==1) {
+        fprintf(stderr,"ERROR, Can't be both big endian (-B) and little endian (-L) at the same time\n");
+        exit(-1);
+    }
+
     if (optind < argc) {
         strcpy(infilename,argv[optind]);
         using_infile = 1;
     }
+        
+    if (verbose==1) {
+        fprintf(stderr,"Verbose mode enabled\n");
+        if (reverse==1) fprintf(stderr, "Input data interpreted as big-endian (msb first)\n");
+        if (littleendian==0) fprintf(stderr, "Output multi-bit symbols encoded as big endian (MSB first)\n");
+        if (littleendian==1) fprintf(stderr, "Output multi-bit symbols encoded as little endian (LSB first) (default)\n");
+        if (((gotB==1) || (gotL==1)) && (bps > 1)){
+            printf("Warning: -L and -B arguments have so effect with 1 bit output symbols\n"); 
+        }
+        if (using_infile==1) {
+            fprintf(stderr,"Reading binary data from file: %s\n", infilename);
+        }
+        if (using_outfile==1) {
+            fprintf(stderr,"Writing NIST 1 symbol per byte data to file: %s\n", filename);
+        }
+        fprintf(stderr,"Bits per symbol = %d\n",bps); 
+    }
+    
 
 	/* Range check the var args */
 
@@ -193,8 +233,13 @@ int main(int argc, char** argv)
         for (i=0;i<len;i++) {
             abyte = buffer[i];
             for(j=0;j<8;j++) {
-                abit = (abyte & 0x01);
-                abyte = abyte >> 1;
+                if (reverse==0) {
+                    abit = (abyte & 0x01);
+                    abyte = abyte >> 1;
+                } else {
+                    abit = (abyte & 0x80) >> 7;
+                    abyte = abyte << 1;
+                }
 
                 bitfifo_head = (bitfifo_head +1) % BITFIFO_SIZE;
                 bitfifo_entries++;
@@ -208,12 +253,17 @@ int main(int argc, char** argv)
         //Pull bits from the FIFO and Write out the symbols (of 1 to 8 bits) as bytes;
         for (i=0;i<symbol_count;i++) {
             abyte = 0;
-            // Read the bits of one symbol and put into a byte
+            // Read the bits of one symbol and put into an output byte.
             for (j=0;j<bps;j++) {
                 bitfifo_tail = (bitfifo_tail +1) % BITFIFO_SIZE;
                 bitfifo_entries--;
                 abit = bitfifo[bitfifo_tail];
-                abyte = (abyte << 1) | abit;
+                
+                if (littleendian==1) {
+                    abyte = abyte | (abit << j);
+                } else {
+                    abyte = (abyte << 1) | abit;
+                }
             }
 
             bytecount++;
