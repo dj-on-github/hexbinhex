@@ -8,7 +8,7 @@ Usage: hex2bin [-h][-s lines_to_skip][-o <out filename>][filename]
 Convert hexadecimal data to binary.
   Author: David Johnston, dj@deadhat.com
 
-# bin2hex -h
+$ bin2hex -h
 Usage: bin2hex [-w <width>][-h][-o <out filename>] [filename]
 
 Convert binary data to hexadecimal.
