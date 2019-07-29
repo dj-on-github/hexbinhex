@@ -72,9 +72,9 @@ int main(int argc, char** argv)
     int abyte;
 
     int littleendian=1;
-    int gotL=0;
-    int gotB=0;
-    int verbose = 0;
+    //int gotL=0;
+    //int gotB=0;
+    //int verbose = 0;
     int reverse = 0;
     
 	/* Defaults */
@@ -86,7 +86,7 @@ int main(int argc, char** argv)
 	/* get the options and arguments */
     int longIndex;
 
-    char optString[] = "o:k:l:BLrvh";
+    char optString[] = "o:k:l:BLrh";
     static const struct option longOpts[] = {
     { "output", no_argument, NULL, 'o' },
     { "width", required_argument, NULL, 'w' },
@@ -116,18 +116,18 @@ int main(int argc, char** argv)
                 break;
             case 'L':
                 littleendian=1;
-                gotL=1;
+                //gotL=1;
                 break;
             case 'B':
                 littleendian=0;
-                gotB=1;
+                //gotB=1;
                 break;
             case 'r':
                 reverse=1;
                 break;
-            case 'v':
-                verbose=1;
-                break;
+            //case 'v':
+            //    verbose=1;
+            //    break;
             case 'h':   /* fall-through is intentional */
             case '?':
                 display_usage();
