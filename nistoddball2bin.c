@@ -71,11 +71,7 @@ int main(int argc, char** argv)
     int bps;        // Bits per Symbol
     int abyte;      // A Byte. Surprise.
 
-    int littleendian=1;  //Put the first bits in the
-                         //lower order of the byte
-    int gotL=0;          // 1 when little endian chosen on cmd line
-    int gotB=0;          // 1 when bit endian chosen on cmd line
-    int verbose = 0;     // Set to non zero for verbose output
+    int littleendian=1;
     int reverse = 0;
     
 	/* Defaults */
@@ -87,7 +83,7 @@ int main(int argc, char** argv)
 	/* get the options and arguments */
     int longIndex;
 
-    char optString[] = "o:k:l:BLrvh";
+    char optString[] = "o:k:l:BLrh";
     static const struct option longOpts[] = {
     { "output", no_argument, NULL, 'o' },
     { "width", required_argument, NULL, 'w' },
@@ -117,18 +113,18 @@ int main(int argc, char** argv)
                 break;
             case 'L':
                 littleendian=1;
-                gotL=1;
+                //gotL=1;
                 break;
             case 'B':
                 littleendian=0;
-                gotB=1;
+                //gotB=1;
                 break;
             case 'r':
                 reverse=1;
                 break;
-            case 'v':
-                verbose=1;
-                break;
+            //case 'v':
+            //    verbose=1;
+            //    break;
             case 'h':   /* fall-through is intentional */
             case '?':
                 display_usage();
@@ -193,10 +189,6 @@ int main(int argc, char** argv)
     int last_abyte = -1;
     int max_runcount = 0;
     int location = 0;
-
-    //if (reverse == 0) fprintf(stderr,"reverse=0\n");
-    //else fprintf(stderr,"reverse=1\n");
-    //fflush(stderr);
 
     do {
         if (using_infile==1)

@@ -1,9 +1,12 @@
+A set of binary, hex, ascii binary and nist format converters. 
+
 $ hex2bin -h
 Usage: hex2bin [-h][-s lines_to_skip][-o <out filename>][filename]
+       -s n          Skip the first n lines of the input text
+       -o filename   Output to file filename instead of stdout
 
 Convert hexadecimal data to binary.
   Author: David Johnston, dj@deadhat.com
-
 
 $ bin2hex -h
 Usage: bin2hex [-w <width>][-h][-o <out filename>] [filename]
@@ -11,27 +14,51 @@ Usage: bin2hex [-w <width>][-h][-o <out filename>] [filename]
 Convert binary data to hexadecimal.
   Author: David Johnston, dj@deadhat.com
 
-$ bin201 -h
+$  bin201 -h
 Usage: bin201 [-w <width>][-b][-h][-o <out filename>] [filename]
   -w <width> Sets the number of bits per output line
-  -b         Reverses the order of bits in each byte
+  -B         Reverses the order of bits in each byte to big endian
+  -L         Outputs bits as little endian (default)
 Convert binary data to ascii binary (01001001).
   Author: David Johnston, dj@deadhat.com
 
 $ bin2nistoddball -h
-Usage: bin2nistoddball [-w <width>][-l <bits_per_symbol 1-8>][-h][-o <out filename>] [filename]
+Usage: bin2nistoddball [-l <bits_per_symbol 1-8>][-B|-L][-v][-h][-o <out filename>] [filename]
+       -l , --length <bits_per_symbol 1-8> Set the number of bits to encode in eat output byte
+       -r , --reverse                      Interpret input binary data as big endian (MSB first) (default is little endian)
+       -B , --bigendian                    Unpack output multi-bit symbols as big-endian (msb first)
+       -L , --littleendian                 Unpack output multi-bit symbols as little-endian (lsb first) (default)
+       -v , --verbose                      Output information to stderr
+       -h , --help                         Output this information
+
+Convert binary data to NIST Oddball SP800-90B one-symbol-per-byte format.
+  Author: David Johnston, dj@deadhat.com
+  
+$ nistoddball2bin -h
+Usage: nistoddball2bin [-l <bits_per_symbol 1-8>][-B|-L][-v][-h][-o <out filename>] [filename]
+       -l n          Set the number of symbol bits per byte encoded in the input data. Must be between 1 to 8
+       -B            Interpret the input symbols at being big endian (MSB first)
+       -L            Interpret the input symbols at being little endian (LSB first) (default)
+       -v            Verbose mode. Outputs information to stderr
+       -h            Display this information
+       -o filename   Output to file filename instead of stdout
 
 Convert binary data to NIST Oddball SP800-90B one-symbol-per-byte format.
   Author: David Johnston, dj@deadhat.com
 
-
-
+Notes:
+      The NIST format for SP800-90B testing requires symbols to be as one symbol per bit.
+      This means only symbols of sizes 1 through 8 bits can be supported.
+      The bit ordering of the bits within the symbols is not specified by NIST. The -L and -B options allow you to choose.
+      The output binary data by default is in little endian format, with the lower order bits in bytes coming before higher order bits. This can be reversed with the -r option.
+      
 Two programs to convert between hex and binary format. bin2hex exists
 because it has a more compact output format than od or hexdump.  hex2bin
 exists just for the sake of symmetry.
 
 bin2nistoddball converts binary to the oddball one-symbol-per-byte 
-format used by the NIST SP800-90B sofware.
+format used by the NIST SP800-90B sofware. nistoddball2bin does the
+reverse.
 
 bin201 converts binary to ASCII binary
 
