@@ -268,7 +268,8 @@ int main(int argc, char** argv)
     } while (1==1);
     
     if (using_outfile==1) fclose(ofp);
-    
+
+    return 0;    
 }
 
 

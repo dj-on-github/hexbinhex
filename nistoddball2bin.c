@@ -61,20 +61,21 @@ int main(int argc, char** argv)
     int opt;
 	int i;
 	
-	FILE *ifp;
-	FILE *ofp;
-	int using_outfile;
-	int using_infile;
-	char filename[1000];
+	FILE *ifp;          // Input file pointer
+	FILE *ofp;          // Output file pointer
+	int using_outfile;      // True if -o <file> option used
+	int using_infile;       // True if input filename given
+	char filename[1000];    // Let's hope the filename isn't bigger
 	char infilename[1000];
 	
-    int bps;   
-    int abyte;
+    int bps;        // Bits per Symbol
+    int abyte;      // A Byte. Surprise.
 
-    int littleendian=1;
-    int gotL=0;
-    int gotB=0;
-    int verbose = 0;
+    int littleendian=1;  //Put the first bits in the
+                         //lower order of the byte
+    int gotL=0;          // 1 when little endian chosen on cmd line
+    int gotB=0;          // 1 when bit endian chosen on cmd line
+    int verbose = 0;     // Set to non zero for verbose output
     int reverse = 0;
     
 	/* Defaults */
@@ -278,6 +279,8 @@ int main(int argc, char** argv)
     
     //if (using_outfile==1) fclose(ofp);
     //printf("max_runcount = %d\n",max_runcount);
+
+    return 0;
 }
 
 
