@@ -154,7 +154,7 @@ int main(int argc, char** argv)
 		}
 	}
     
-    char errstring[100];
+    char errstring[1200];
     
 	/* open the input file if needed */
 	if (using_infile==1)
