@@ -47,7 +47,7 @@ Convert binary data to NIST Oddball SP800-90B one-symbol-per-byte format.
   Author: David Johnston, dj@deadhat.com
 
 Notes:
-      The NIST format for SP800-90B testing requires symbols to be as one symbol per bit.
+      The NIST format for SP800-90B testing requires symbols to be as one symbol per byte.
       This means only symbols of sizes 1 through 8 bits can be supported.
       The bit ordering of the bits within the symbols is not specified by NIST. The -L and -B options allow you to choose.
       The output binary data by default is in little endian format, with the lower order bits in bytes coming before higher order bits. This can be reversed with the -r option.
