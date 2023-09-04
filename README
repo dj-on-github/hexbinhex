@@ -22,6 +22,13 @@ Usage: bin201 [-w <width>][-b][-h][-o <out filename>] [filename]
 Convert binary data to ascii binary (01001001).
   Author: David Johnston, dj@deadhat.com
 
+$ 012bin -h
+Usage: 012bin [-h][-B][-L][-o <out filename>] [filename]
+  -B         Treats bits as big endian
+  -L         Treats bits as little endian (default)
+Convert ascii binary (01001001) to binary data.
+  Author: David Johnston, dj@deadhat.com
+
 $ bin2nistoddball -h
 Usage: bin2nistoddball [-l <bits_per_symbol 1-8>][-B|-L][-v][-h][-o <out filename>] [filename]
        -l , --length <bits_per_symbol 1-8> Set the number of bits to encode in eat output byte
@@ -62,4 +69,29 @@ reverse.
 
 bin201 converts binary to ASCII binary
 
+012bin converts ASCII binary to binary
+
+Examples:
+
+$ cat hexfile.hex
+0001020304050607
+08090a0b0c0d0e0f
+1011121314151617
+18191a1b1c1d1e1f
+
+$ hex2bin hexfile.hex | bin2hex
+000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F
+
+$ hex2bin hexfile.hex | bin201
+00000000100000000100000011000000
+00100000101000000110000011100000
+00010000100100000101000011010000
+00110000101100000111000011110000
+00001000100010000100100011001000
+00101000101010000110100011101000
+00011000100110000101100011011000
+00111000101110000111100011111000
+
+$ hex2bin hexfile.hex | bin201 | 012bin | bin2hex
+000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F
 
