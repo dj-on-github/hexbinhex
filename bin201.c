@@ -38,6 +38,7 @@ fprintf(stderr,"Usage: bin201 [-w <width>][-b][-h][-o <out filename>] [filename]
 fprintf(stderr,"  -w <width> Sets the number of bits per output line\n");
 fprintf(stderr,"  -B         Reverses the order of bits in each byte to big endian\n");
 fprintf(stderr,"  -L         Outputs bits as little endian (default)\n");
+fprintf(stderr,"  -s         Add a space between every 8 bits\n");
 fprintf(stderr,"Convert binary data to ascii binary (01001001).\n");
 fprintf(stderr,"  Author: David Johnston, dj@deadhat.com\n");
 fprintf(stderr,"\n");
@@ -78,6 +79,7 @@ int main(int argc, char** argv)
     int gotB = 0;
     int gotL = 0;    
     int abyte;
+    int spaces = 0;
     int verbose = 0;
     
 	/* Defaults */
@@ -89,12 +91,13 @@ int main(int argc, char** argv)
 	/* get the options and arguments */
     int longIndex;
 
-    char optString[] = "o:k:w:BLvh";
+    char optString[] = "o:k:w:BLsvh";
     static const struct option longOpts[] = {
     { "output", no_argument, NULL, 'o' },
     { "width", required_argument, NULL, 'w' },
     { "bigendian", no_argument, NULL, 'B' },
     { "littleendian", no_argument, NULL, 'L' },
+    { "spacebetweenbytes", no_argument, NULL, 's'},
     { "verbose", no_argument, NULL, 'v' },
     { "help", no_argument, NULL, 'h' },
     { NULL, no_argument, NULL, 0 }
@@ -122,6 +125,9 @@ int main(int argc, char** argv)
             case 'L':
                 littleendian = 1;
                 gotL = 1;
+                break;
+            case 's':
+                spaces = 1;
                 break;
             case 'v':
                 verbose = 1;
@@ -195,6 +201,7 @@ int main(int argc, char** argv)
     size_t len;
     int lastcharnl = 0;
     char binch;
+    int first = 1;
 
     do {
         if (using_infile==1)
@@ -224,15 +231,24 @@ int main(int argc, char** argv)
 
                 sprintf((char *)&((outbuffer[outindex])),"%c",binch);  
                 outindex+=1;
-                    
+                
                 if (bitcount==width) {
                     sprintf((char *)&(outbuffer[outindex]),"\n");
                     outindex++;
                     bitcount=0;
                     lastcharnl = 1;
+                    first = 1;
                 }
                 else {
                     lastcharnl = 0;
+                    if ((spaces==1) && ((bitcount % 8)==0) && (bitcount > 1) && (first==0)) {
+                        sprintf((char *)&((outbuffer[outindex]))," ");  
+                        outindex++;
+                    }
+                    else
+                    {
+                        first = 0;
+                    }
                 }
             }
         }
