@@ -1,8 +1,8 @@
 
 /*
-    bin2hex - A utility to convert binary data to hex data.
+    012bin - A utility to convert ascii binary data to binary data.
     
-    Copyright (C) 2017  David Johnston
+    Copyright (C) 2022  David Johnston
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -42,19 +42,6 @@ fprintf(stderr,"  Author: David Johnston, dj@deadhat.com\n");
 fprintf(stderr,"\n");
 }
 
-void printsample(unsigned char *thesample)
-{
-    int tempindex;
-    int j;
-    int i;
-   tempindex = 0;
-    for (j=0;j<16;j++)
-    {
-            for (i=0;i<16;i++) printf("%02X",thesample[tempindex++]);
-            printf("\n");
-    }
-}
-
 /********
 * main() is mostly about parsing and qualifying the command line options.
 */
@@ -63,7 +50,6 @@ int main(int argc, char** argv)
 {
     int opt;
 	int i;
-    int j;
 	
 	FILE *ifp;
 	FILE *ofp;
@@ -72,7 +58,6 @@ int main(int argc, char** argv)
 	char filename[1000];
 	char infilename[1000];
 	
-    int width=32;
     int littleendian = 1;
     int gotB = 0;
     int gotL = 0;    
@@ -161,71 +146,72 @@ int main(int argc, char** argv)
 	}
 
     unsigned char buffer[2048];
-    unsigned char outbuffer[10000];
+    unsigned char outbuffer[256];
     int outindex = 0;
     int bitcount = 0;
     int done=0;
     size_t len;
-    int lastcharnl = 0;
     char binch;
+    int remainder=0;
 
     do {
-        if (using_infile==1)
-            len = fread(buffer, 1, 512 , ifp);
-        else
-            len = fread(buffer, 1, 512 , stdin);
-            
-        if (len == 0) break;
-        
-        for (i=0;i<len;i++) {
-            abyte = buffer[i];
-            for (j=0;j<8;j++) {
-                if (littleendian == 0) {
-                    if (((abyte >> j) & 0x01) == 0) {
-                        binch = '0';
-                    } else {
-                        binch = '1';
-                    }
-                } else {
-                    if (((abyte >> (7-j)) & 0x01) == 0) {
-                        binch = '0';
-                    } else {
-                        binch = '1';
-                    }
-                }
-                bitcount++;
 
-                sprintf((char *)&((outbuffer[outindex])),"%c",binch);  
-                outindex+=1;
-                    
-                if (bitcount==width) {
-                    sprintf((char *)&(outbuffer[outindex]),"\n");
-                    outindex++;
-                    bitcount=0;
-                    lastcharnl = 1;
-                }
-                else {
-                    lastcharnl = 0;
+        // Tricky offset of the left over bits from the previous
+        // block by pulling in 512 new bits (as chars) but putting
+        // the location just after the remainder. 
+        // The end of this routine moves the new remainder to
+        // the start of the buffer.
+        // The buffer is bigger than 512, so there is space.
+
+        if (using_infile==1)
+            len = remainder+fread(buffer+remainder, 1, 512 , ifp);
+        else
+            len = remainder+fread(buffer+remainder, 1, 512 , stdin);
+            
+        // We can't turn less than 8 bits into a byte.
+        if (len < 8) {
+            done = 1;
+            break;
+        }
+
+        abyte = 0;
+        int skip;
+
+        for (i=0;i<len;i++) {
+            binch = (char)buffer[i];
+            skip=0;
+
+            if (littleendian==1) {
+                if (binch=='0') abyte = (abyte >> 1) & 0xff;
+                else if (binch=='1') abyte = ((abyte >> 1) & 0xff) | 0x80;
+                else skip=1;
+            } else {
+                if (binch=='0') abyte = (abyte << 1) & 0xff;
+                else if (binch=='1') abyte = ((abyte << 1) & 0xff) | 0x01;
+                else skip=1;
+            }
+            
+            if (skip==0) {
+                bitcount +=1;
+                if (bitcount == 8) {
+                    outbuffer[outindex] = abyte;
+                    outindex += 1;
+                    bitcount = 0;
                 }
             }
         }
-        
-        if (using_outfile)
-            fwrite(outbuffer, outindex,1,ofp);
-        else
-            fwrite(outbuffer, outindex,1,stdout);
-        
-        outindex = 0;
+
+        if (outindex > 0) {
+            if (using_outfile==1) {
+                fwrite(outbuffer,1,outindex,ofp);
+            } else {
+                fwrite(outbuffer,1,outindex,stdout);
+            }
+            outindex = 0;
+        }
       
-        
     } while (done==0);
     
-    if (lastcharnl==0) {
-        if (using_outfile)
-            fprintf(ofp,"\n");
-        else
-            printf("\n");
-    }
     
     if (using_outfile==1) fclose(ofp);
 

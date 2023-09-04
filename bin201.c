@@ -207,7 +207,7 @@ int main(int argc, char** argv)
         for (i=0;i<len;i++) {
             abyte = buffer[i];
             for (j=0;j<8;j++) {
-                if (littleendian == 0) {
+                if (littleendian == 1) {
                     if (((abyte >> j) & 0x01) == 0) {
                         binch = '0';
                     } else {
