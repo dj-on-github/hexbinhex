@@ -178,7 +178,6 @@ int main(int argc, char** argv)
 
     unsigned char outbuffer[20000];
     int outindex = 0;
-    int bytecount = 0;
     int done=0;
     size_t len;
     unsigned char abit;
@@ -188,7 +187,6 @@ int main(int argc, char** argv)
     int runcount = 0;
     int last_abyte = -1;
     int max_runcount = 0;
-    int location = 0;
 
     do {
         if (using_infile==1)
@@ -241,7 +239,6 @@ int main(int argc, char** argv)
                 }
             }
 
-            bytecount++;
             outbuffer[outindex] = abyte;
             outindex += 1;
 
@@ -254,10 +251,6 @@ int main(int argc, char** argv)
                 runcount = 1;
                 last_abyte = abyte;
             }
-            location++;
-            //if (runcount > 35) {
-            //    fprintf(stderr,"Runcount = %d, location = %d\n",runcount,location);
-            //}
         }
         
         if (using_outfile)
